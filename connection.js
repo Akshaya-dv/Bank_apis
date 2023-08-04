@@ -102,5 +102,35 @@ function deleteBy(col,value){
     });
 
 }
-module.exports = { getAll, insertData, getBy ,deleteBy,update};
+function updatebal(){
+
+const updatebala=`UPDATE public.bank_info AS t
+SET balance = new_values.balance,
+    years = new_values.years
+FROM (VALUES
+        (1, 20000, 2),
+        (2, 1000, 3),
+        (3, 6000, 4),
+        (4,5000, 3),
+        (5, 7000, 5),
+        (6, 6000, 3),
+        (7, 7000, 7),
+        (8, 50000, 3),
+        (9, 1000, 7),
+        (10, 2000, 3),
+        (11, 60000, 5),
+        (12, 10000, 2),
+        (13, 5000, 6),
+        (14, 16000, 4),
+        (15, 7000, 3),
+        (16, 5000, 1),
+        (17, 10000, 3),
+        (18, 10000, 6),
+        (19, 11000, 4)
+    ) AS new_values(id, balance, years)
+WHERE t.id = new_values.id;
+`
+return pool.query(updatebala);
+}
+module.exports = { getAll, insertData, getBy ,deleteBy,update,updatebal};
 //pool.end()
