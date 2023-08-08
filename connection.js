@@ -98,6 +98,7 @@ async function update(data, col, value) {
     const allids = await pool.query(`SELECT id FROM public.bank_info ;`)
     const alldata = await pool.query(`SELECT ${col} FROM public.bank_info where ${col}='${value}' ;`)
     // console.log(data[0])
+    if (id === undefined){
     if (alldata.rowCount > 0) {
           console.log(cname, ac_no, ac_open, ifsc, have_loan, phone, col, value)
           const updateque = `UPDATE public.bank_info
@@ -114,10 +115,13 @@ async function update(data, col, value) {
     }
     else {
       return `The ${col}  '${value}' is not present.`;
+    }}
+    else{
+      return "Id can not be updated"
     }
   }
   catch {
-
+ return "Error while updating"
   }
 }
 

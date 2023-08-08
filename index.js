@@ -1,7 +1,6 @@
 const http = require('http');
 const con = require('./connection');
-const { isNull } = require('util');
-const { error } = require('console');
+
 
 const server = http.createServer((req, res) => {
 
@@ -26,11 +25,12 @@ const server = http.createServer((req, res) => {
       con.getBy(limit, offset, col, value)
         .then((data) => {
           res.writeHead(201, { 'Content-Type': 'application/json' });
-          if(data.length>0){
-           // console.log(data.length)
-          res.end(JSON.stringify(data));}
-          else{
-            res.end(`${col} '${value}' is not present` );
+          if (data.length > 0) {
+            // console.log(data.length)
+            res.end(JSON.stringify(data));
+          }
+          else {
+            res.end(`${col} '${value}' is not present`);
           }
         })
         .catch(error => {
@@ -72,26 +72,26 @@ const server = http.createServer((req, res) => {
         if (values.some(value => value == undefined)) {
           res.end("please Enter the all values")
         }
-        else if (!(Number.isInteger(values[0])))  {
-           res.end("please Enter id in interger") 
+        else if (!(Number.isInteger(values[0]))) {
+          res.end("please Enter id in interger")
         }
-        else if (typeof values[1] != 'string'|values[1].trim()==="") {
-           res.end("please Enter the name in string format ") 
+        else if (typeof values[1] != 'string' | values[1].trim() === "") {
+          res.end("please Enter the name in string format ")
         }
-        else if (!(Number.isInteger(values[2]))) { 
-          res.end("please Enter ac_no in integer") 
+        else if (!(Number.isInteger(values[2]))) {
+          res.end("please Enter ac_no in integer")
         }
         else if (isNaN(Date.parse(values[3]))) {
           res.end("Please enter a valid date for ac_open in yyyy-mm-dd formate.");
         }
-        else if (typeof values[4] != 'string'|values[1].trim()==="") {
-           res.end("please Enter the ifsc in string") 
+        else if (typeof values[4] != 'string' | values[1].trim() === "") {
+          res.end("please Enter the ifsc in string")
         }
         else if (typeof values[5] != 'boolean') {
-          res.end("please Enter the have_loan in boolean") 
+          res.end("please Enter the have_loan in boolean")
         }
         else if (!(Number.isInteger(values[6]))) {
-           res.end("please Enter phone in interger") 
+          res.end("please Enter phone in interger")
         }
         else {
           con.insertData(values)
@@ -120,7 +120,7 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => {
       body += chunk.toString();
     });
-   // console.log(body)
+    // console.log(body)
     req.on('end', () => {
       const vary = new URLSearchParams((req.url).split("?").pop())
       const { col, value } = parameter(vary)
@@ -130,29 +130,29 @@ const server = http.createServer((req, res) => {
         const { id, cname, ac_no, ac_open, ifsc, have_loan, phone } = data;
         const values = [id, cname, ac_no, ac_open, ifsc, have_loan, phone];
         //console.log(values)
-     
-       if (typeof values[1] != 'string'|values[1].trim()==="") {
-           res.end("please Enter the name in string format ") 
+
+        if (typeof values[1] != 'string' | values[1].trim() === "") {
+          res.end("please Enter the name in string format ")
         }
-        else if (!(Number.isInteger(values[2]))) { 
-          res.end("please Enter ac_no in integer") 
+        else if (!(Number.isInteger(values[2]))) {
+          res.end("please Enter ac_no in integer")
         }
         else if (isNaN(Date.parse(values[3]))) {
           res.end("Please enter a valid date for ac_open in yyyy-mm-dd formate.");
         }
-        else if (typeof values[4] != 'string'|values[1].trim()==="") {
-           res.end("please Enter the ifsc in string") 
+        else if (typeof values[4] != 'string' | values[1].trim() === "") {
+          res.end("please Enter the ifsc in string")
         }
         else if (typeof values[5] != 'boolean') {
-          res.end("please Enter the have_loan in boolean") 
+          res.end("please Enter the have_loan in boolean")
         }
         else if (!(Number.isInteger(values[6]))) {
-           res.end("please Enter phone in interger") 
+          res.end("please Enter phone in interger")
         }
         else {
           con.update(data, col, value)
             .then((data) => {
-              res.writeHead(201, { 'Content-Type': 'application/json' });
+              res.writeHead(200, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify(data));
             })
             .catch(error => {
@@ -174,7 +174,7 @@ const server = http.createServer((req, res) => {
     const { col, value } = parameter(vary)
     con.deleteBy(col, value)
       .then((data) => {
-        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(data));
       })
       .catch(error => {
