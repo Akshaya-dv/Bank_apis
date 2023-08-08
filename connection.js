@@ -35,7 +35,7 @@ pool.connect()
   .catch(error => console.error('Error connecting to database:', error));
 
 // Function to fetch all data from the 'bank_info' table
-function getAll(limit,offset) {
+function getAll(limit, offset) {
   return pool.query(`SELECT * FROM public.bank_info order by id limit ${limit} offset ${offset}`)
     .then(result => {
       const data = result.rows;
@@ -48,8 +48,8 @@ function getAll(limit,offset) {
     });
 }
 
-function getBy(limit,offset,col,value) {
-  
+function getBy(limit, offset, col, value) {
+
   let select = `SELECT * FROM public.bank_info where ${col}='${value}' order by id limit ${limit} offset ${offset}`
   return pool.query(select)
     .then(result => {
@@ -63,48 +63,84 @@ function getBy(limit,offset,col,value) {
     });
 }
 
-function insertData(values) {
-  
-  const insertQuery = `
+async function insertData(values) {
+  try {
+    const allids = await pool.query(`SELECT id FROM public.bank_info ;`)
+    // console.log(allids.rows.some(row => row.id == values[0]))
+
+    if (allids.rows.some(row => row.id == values[0])) {
+      return "Error this id is all ready present";
+    }
+    else {
+      const insertQuery = `
   INSERT INTO public.bank_info(
     id, cname, ac_no, ac_open, ifsc, have_loan, phone)
     VALUES ($1, $2, $3, $4, $5, $6, $7);
   `;
-   return pool.query(insertQuery, values)
-   .then(()=>{
-    return "The data is inserted sucessfully";})
- .catch(error => {
-   console.error('Error id is already present :', error);
-   throw error;})
- 
-}
-  
-function update(data,col,value){
- 
-  const { id, cname, ac_no, ac_open, ifsc, have_loan, phone } = data;
-  // console.log(id,cname, ac_no, ac_open, ifsc, have_loan, phone,col,value )
-  const updateque=`UPDATE public.bank_info
-	SET  id=${id},cname='${cname}', ac_no='${ac_no}', ac_open='${ac_open}', ifsc='${ifsc}', have_loan=${have_loan}, phone=${phone}
-	WHERE ${col}=${value};`;
-  return pool.query(updateque)
-  .then(()=>{console.log("All done")})
-  .catch(()=>{console.log("Leave it")})
+      return pool.query(insertQuery, values)
+        .then(() => {
+          return "The data is inserted sucessfully";
+        })
+        .catch(error => {
+          console.error('Error some thing went wrong ', error);
+          throw error;
+        })
+    }
+  }
+  catch { }
+
 }
 
-function deleteBy(col,value){
-  const deleteque=`Delete from public.bank_info where ${col}='${value}'`
+async function update(data, col, value) {
+  // console.log(value,col)
+  try {
+    const { id, cname, ac_no, ac_open, ifsc, have_loan, phone } = data;
+    const allids = await pool.query(`SELECT id FROM public.bank_info ;`)
+    const alldata = await pool.query(`SELECT ${col} FROM public.bank_info where ${col}='${value}' ;`)
+    // console.log(data[0])
+    if (alldata.rowCount > 0) {
+          console.log(cname, ac_no, ac_open, ifsc, have_loan, phone, col, value)
+          const updateque = `UPDATE public.bank_info
+	SET  cname='${cname}', ac_no='${ac_no}', ac_open='${ac_open}', ifsc='${ifsc}', have_loan=${have_loan}, phone=${phone}
+	WHERE ${col}='${value}';`;
+          return pool.query(updateque)
+            .then(() => {
+              return "The data is updated sucessfully"
+            })
+            .catch(error => {
+              return 'Error: their are more than one record in occured while updating data.'
+            })
+
+    }
+    else {
+      return `The ${col}  '${value}' is not present.`;
+    }
+  }
+  catch {
+
+  }
+}
+
+function deleteBy(col, value) {
+  const deleteque = `Delete from public.bank_info where ${col}='${value}'`
   return pool.query(deleteque)
-    .then(()=>{
-       return "The data is deleted sucessfully";})
+    .then((data) => {
+      if (data.rowCount > 0) {
+        return "The data is deleted sucessfully";
+      }
+      else {
+        return `The given ${col} is not present `;
+      }
+    })
     .catch(error => {
       console.error('Error deleting data:', error);
       throw error;
     });
 
 }
-function updatebal(){
+function updatebal() {
 
-const updatebala=`UPDATE public.bank_info AS t
+  const updatebala = `UPDATE public.bank_info AS t
 SET balance = new_values.balance,
     years = new_values.years
 FROM (VALUES
@@ -130,7 +166,7 @@ FROM (VALUES
     ) AS new_values(id, balance, years)
 WHERE t.id = new_values.id;
 `
-return pool.query(updatebala);
+  return pool.query(updatebala);
 }
-module.exports = { getAll, insertData, getBy ,deleteBy,update,updatebal};
+module.exports = { getAll, insertData, getBy, deleteBy, update, updatebal };
 //pool.end()

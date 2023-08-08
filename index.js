@@ -9,7 +9,7 @@ const server = http.createServer((req, res) => {
   if (req.url.startsWith('/bankinfo') && req.method == 'GET') {
     const vary = new URLSearchParams((req.url).split("?").pop())
 
-    let limit = 5;
+    let limit = 10;
     let page = 1;
     if (vary.has('limit')) {
       limit = vary.get('limit');
@@ -26,7 +26,12 @@ const server = http.createServer((req, res) => {
       con.getBy(limit, offset, col, value)
         .then((data) => {
           res.writeHead(201, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify(data));
+          if(data.length>0){
+           // console.log(data.length)
+          res.end(JSON.stringify(data));}
+          else{
+            res.end(`${col} '${value}' is not present` );
+          }
         })
         .catch(error => {
           res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -70,13 +75,16 @@ const server = http.createServer((req, res) => {
         else if (!(Number.isInteger(values[0])))  {
            res.end("please Enter id in interger") 
         }
-        else if (typeof values[1] != 'string') {
-           res.end("please Enter the name in string") 
+        else if (typeof values[1] != 'string'|values[1].trim()==="") {
+           res.end("please Enter the name in string format ") 
         }
-        else if (!(Number.isInteger(values[0]))) { 
-          res.end("please Enter ac_no in string") 
+        else if (!(Number.isInteger(values[2]))) { 
+          res.end("please Enter ac_no in integer") 
         }
-        else if (typeof values[4] != 'string') {
+        else if (isNaN(Date.parse(values[3]))) {
+          res.end("Please enter a valid date for ac_open in yyyy-mm-dd formate.");
+        }
+        else if (typeof values[4] != 'string'|values[1].trim()==="") {
            res.end("please Enter the ifsc in string") 
         }
         else if (typeof values[5] != 'boolean') {
@@ -87,19 +95,19 @@ const server = http.createServer((req, res) => {
         }
         else {
           con.insertData(values)
-            .then(() => {
+            .then((data) => {
               res.writeHead(201, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ message: 'Data inserted successfully.' }));
+              res.end(JSON.stringify(data));
             })
             .catch(error => {
               res.writeHead(500, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ error: 'the id is all ready present while inserting data.' }));
+              res.end(JSON.stringify({ error: ' Error while inserting data.' }));
             });
         }
 
       }
       catch {
-        res.end(JSON.stringify({ error: 'please enter the data in correct json formate.' }));
+        res.end(JSON.stringify({ error: 'Please enter the data in correct json formate.' }));
       }
     });
 
@@ -112,37 +120,40 @@ const server = http.createServer((req, res) => {
     req.on('data', chunk => {
       body += chunk.toString();
     });
-    console.log(body)
+   // console.log(body)
     req.on('end', () => {
       const vary = new URLSearchParams((req.url).split("?").pop())
       const { col, value } = parameter(vary)
       try {
         const data = JSON.parse(body);
-        console.log(data);
+        //console.log(data);
         const { id, cname, ac_no, ac_open, ifsc, have_loan, phone } = data;
         const values = [id, cname, ac_no, ac_open, ifsc, have_loan, phone];
-        console.log(values)
-        if (values.some(value => value == undefined)) {
-          res.end("please Enter the all values")
+        //console.log(values)
+     
+       if (typeof values[1] != 'string'|values[1].trim()==="") {
+           res.end("please Enter the name in string format ") 
         }
-        else if (!(Number.isInteger(values[0]))) { res.end("please Enter id in interger") }
-        else if (typeof values[1] != 'string') {
-          { res.end("please Enter the name in string") }
+        else if (!(Number.isInteger(values[2]))) { 
+          res.end("please Enter ac_no in integer") 
         }
-        else if (typeof values[2] != 'string') { res.end("please Enter ac_no in string") }
-        else if (typeof values[4] != 'string') {
-          { res.end("please Enter the ifsc in string") }
+        else if (isNaN(Date.parse(values[3]))) {
+          res.end("Please enter a valid date for ac_open in yyyy-mm-dd formate.");
+        }
+        else if (typeof values[4] != 'string'|values[1].trim()==="") {
+           res.end("please Enter the ifsc in string") 
         }
         else if (typeof values[5] != 'boolean') {
-          { res.end("please Enter the have_loan in boolean") }
+          res.end("please Enter the have_loan in boolean") 
         }
-        else if (!(Number.isInteger(values[6]))) { res.end("please Enter phone in interger") }
-
+        else if (!(Number.isInteger(values[6]))) {
+           res.end("please Enter phone in interger") 
+        }
         else {
           con.update(data, col, value)
-            .then(() => {
+            .then((data) => {
               res.writeHead(201, { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify({ message: 'Data updated successfully.' }));
+              res.end(JSON.stringify(data));
             })
             .catch(error => {
               res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -184,8 +195,8 @@ const port = 3000;
 server.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
-con.updatebal()
-.then(()=>{console.log("all done")})
+//con.updatebal()
+//.then(()=>{console.log("all done")})
 
 function parameter(vary) {
   let col;
