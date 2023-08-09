@@ -49,24 +49,20 @@ function getAll(limit, offset) {
 }
 
 function getBy(limit, offset, values) {
-  const keys = Array.from(values.keys());
+  const keys = Object.keys(values);
   //console.log(keys)
   let where = "  id IS NOT NULL"
   keys.forEach(key => {
     if (key != "limit" && key != "page") {
-      let keyval = values.get(key)
+      let keyval = values[key]
       if(key=='cname'|key=='ifsc'){
       where = where + ` and ${key} ILIKE '%${keyval}%'`
        //console.log(where)
-      }
-      else if (key=='ac_no'){
-        where=where+ ` and CAST(${key} AS TEXT) ILIKE '%${keyval}%'`
-      }  
-    else{where = where + ` and ${key}='${keyval}'`}
+    }  else{where = where + ` and ${key}='${keyval}'`}
   }
   });
   let select = `SELECT * FROM public.bank_info where ${where}  order by id limit ${limit} offset ${offset}`
-   //console.log(select)
+  // console.log(select)
   return pool.query(select)
     .then(result => {
       const data = result.rows;

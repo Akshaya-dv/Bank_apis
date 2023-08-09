@@ -1,25 +1,34 @@
 const http = require('http');
-const con = require('./connection');
+const con = require('./connect');
 
 
 const server = http.createServer((req, res) => {
 
   //to get all records 
   if (req.url.startsWith('/bankinfo') && req.method == 'GET') {
-    const vary = new URLSearchParams((req.url).split("?").pop())
-
+   try{ const vary = new URLSearchParams((req.url).split("?").pop())
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+     // console.log(body)
+    });
+    req.on('end', () => {
+      const vary = JSON.parse(body);
+      console.log(vary, typeof vary);
+      const { id, cname, ac_no, ac_open, ifsc, have_loan, phone } = vary;
+      const values = [id, cname, ac_no, ac_open, ifsc, have_loan, phone];
     let limit = 10;
     let page = 1;
-    if (vary.has('limit')) {
+    if ('limit' in vary) {
       limit = vary.get('limit');
     }
-    if (vary.has("page")) {
+    if ("page" in vary) {
       page = vary.get('page');
     }
     let offset = (page - 1) * limit;
     const valuesToCheck = ['id', 'cname', 'ac_no', 'ac_open', 'ifsc', 'have_loan', 'phone'];
     //to get specific record
-    if (valuesToCheck.some(value => vary.has(value))) {
+    if (valuesToCheck.some(value => value in vary)) {
 
       con.getBy(limit, offset, vary)
         .then((data) => {
@@ -29,11 +38,11 @@ const server = http.createServer((req, res) => {
             res.end(JSON.stringify(data));
           }
           else {
-            const keys =Array.from( vary.keys());
+            const keys =Object.keys(vary);
             let err=""
             keys.forEach(key => {
               if(key!="limit" && key!="page" ){
-                let keyval=vary.get(key)
+                let keyval=vary[key]
                 err=err+ `${key}= '${keyval}' , `
               }})
             res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -58,7 +67,10 @@ const server = http.createServer((req, res) => {
           res.end(JSON.stringify({ error: 'An error occurred while fetching data.' }));
         });
     }
-
+  });}
+  catch{
+    console.log("hello")
+  }
   }
 
   //To insert data
