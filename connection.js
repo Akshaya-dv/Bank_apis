@@ -36,7 +36,11 @@ pool.connect()
 
 // Function to fetch all data from the 'bank_info' table
 function getAll(limit, offset) {
-  return pool.query(`SELECT * FROM public.bank_info order by id limit ${limit} offset ${offset}`)
+  let select=`SELECT * FROM public.bank_info order by id`
+  if(limit!=0){
+    select=`SELECT * FROM public.bank_info order by id limit ${limit} offset ${offset}`
+  }
+  return pool.query(select)
     .then(result => {
       const data = result.rows;
       console.log('Fetched all data:');
@@ -65,7 +69,10 @@ function getBy(limit, offset, values) {
     else{where = where + ` and ${key}='${keyval}'`}
   }
   });
-  let select = `SELECT * FROM public.bank_info where ${where}  order by id limit ${limit} offset ${offset}`
+    let select=`SELECT * FROM public.bank_info where ${where} order by id `
+  if(limit!=0){
+    select = `SELECT * FROM public.bank_info where ${where}  order by id limit ${limit} offset ${offset}`
+  }
    //console.log(select)
   return pool.query(select)
     .then(result => {
@@ -85,7 +92,7 @@ async function insertData(values) {
     // console.log(allids.rows.some(row => row.id == values[0]))
 
     if (allids.rows.some(row => row.id == values[0])) {
-      return "Error this id is all ready present",406;
+      return "Error this id is all ready present";
     }
     else {
       const insertQuery = `
@@ -95,7 +102,7 @@ async function insertData(values) {
   `;
       return pool.query(insertQuery, values)
         .then(() => {
-          return "The data is inserted sucessfully",200;
+          return "The data is inserted sucessfully";
         })
         .catch(error => {
           console.error('Error some thing went wrong ', error);
@@ -168,10 +175,10 @@ function deleteBy(values) {
   return pool.query(deleteque)
     .then((data) => {
       if (data.rowCount > 0) {
-        return "The data is deleted sucessfully",200;
+        return "The data is deleted sucessfully";
       }
       else {
-        return `The given ${where} is not present `,404;
+        return `The given ${where} is not present `;
       }
     })
     .catch(error => {

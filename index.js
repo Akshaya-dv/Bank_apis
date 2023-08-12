@@ -1,22 +1,25 @@
 const http = require('http');
 const con = require('./connection');
+const cors = require('cors');
 
 
 const server = http.createServer((req, res) => {
+res.setHeader('Access-Control-Allow-Origin','*');
+res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   //to get all records 
   if (req.url.startsWith('/bankinfo') && req.method == 'GET') {
     const vary = new URLSearchParams((req.url).split("?").pop())
-
-    let limit = 10;
-    let page = 1;
-    if (vary.has('limit')) {
+let limit=0;
+let page=0;
+    if (vary.has('limit')&&vary.has("page")) {
       limit = vary.get('limit');
-    }
-    if (vary.has("page")) {
       page = vary.get('page');
+     
     }
     let offset = (page - 1) * limit;
+   
     const valuesToCheck = ['id', 'cname', 'ac_no', 'ac_open', 'ifsc', 'have_loan', 'phone'];
     //to get specific record
     if (valuesToCheck.some(value => vary.has(value))) {
@@ -75,15 +78,16 @@ const server = http.createServer((req, res) => {
         //console.log(data, typeof data);
         const { id, cname, ac_no, ac_open, ifsc, have_loan, phone } = data;
         const values = [id, cname, ac_no, ac_open, ifsc, have_loan, phone];
-        // console.log(values)
+         console.log(values)
         const valide=validate(data)
        // console.log("aaaaa",valide)
         if(valide[0])
          {
-          con.insertData(values)
+        const dat= con.insertData(values)
             .then((data) => {
-              res.writeHead(data[1], { 'Content-Type': 'application/json' });
-              res.end(JSON.stringify(data[0]));
+              console.log("nnn",data)
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify(data));
             })
             .catch(error => {
               res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -171,8 +175,8 @@ const server = http.createServer((req, res) => {
    // const { col, value } = parameter(vary)
     con.deleteBy(vary)
       .then((data) => {
-        res.writeHead(data[1], { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(data[0]));
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(data));
       })
       .catch(error => {
         res.writeHead(500, { 'Content-Type': 'application/json' });
